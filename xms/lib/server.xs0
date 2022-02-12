@@ -1,0 +1,69 @@
+import "os/os.xs0";
+import "io/io.xs0";
+import "sys/sys.xs0";
+import "stdfp.xs0";
+
+const XscriptMinecraftServer = class() {
+    public var ServerExecution;
+    public var EventHandler;
+    public var InfomationParser;
+
+    public var ServerAddress;
+    public var ServerVersion;
+    public var GameType;
+
+    public var MainLoop = function() {
+        while (stdfp.stdin.eof() == false) {
+            var line = sys.readline(ServerExecution.stdoutput[0]);
+            var infomation = InfomationParser.MainParser(line);
+            switch(infomation.MessageType)
+            {
+                case (ServerMessageType.NormalMessage) {
+                    io.print("[Server/INFO] [" + infomation.MessageTime + "] ", infomation.MessageParam);
+                }
+                case (ServerMessageType.WarningMessage) {
+                    io.print("[Server/WARN] [" + infomation.MessageTime + "] ", infomation.MessageParam);
+                }
+                case (ServerMessageType.ErrorMessage) {
+                    io.print("[Server/ERR ] [" + infomation.MessageTime + "] ", infomation.MessageParam);
+                }
+                case (ServerMessageType.ServerAddress) {
+                    this.ServerAddress = infomation.MessageParam; // maybe a list that like ["*", "25565"]
+                    io.print("[Server/ADDR] [" + infomation.MessageTime + "] ", infomation.MessageParam);
+                }
+                case (ServerMessageType.ServerVersion) {
+                    this.ServerVersion = infomation.MessageParam[0]; // like ["1.18.1"]
+                    io.print("[Server/VERS] [" + infomation.MessageTime + "] ", infomation.MessageParam);
+                }
+                case (ServerMessageType.GameType) {
+                    this.GameType = infomation.MessageParam[0]; // like ["SURVIVAL"]
+                    io.print("[Server/TYPE] [" + infomation.MessageTime + "] ", infomation.MessageParam);
+
+                }
+                case (ServerMessageType.ServerStarted) {
+                    this.EventHandler.event_server_started(this, this.ServerAddress, this.ServerVersion);
+                    io.print("[Server/INFO] [" + infomation.MessageTime + "] Server Started");
+                }
+                case (ServerMessageType.PlayerJoined) {
+                    // infomation.MessageParam[0] -> playerName
+                    this.EventHandler.event_player_connected(this, infomation.MessageParam[0]);
+                }
+                case (ServerMessageType.PlayerDisconnected) {
+                    // infomation.MessageParam[0] -> playerName
+                    this.EventHandler.event_player_disconnected(this, infomation.MessageParam[0]);
+                }
+                case (ServerMessageType.PlayerSendMessage) {
+                    // infomation.MessageParam[0] -> playerName
+                    // infomation.MessageParam[1] -> Message
+                    this.EventHandler.event_send_message(this, infomation.MessageParam[0], infomation.MessageParam[1]);
+                }
+            };
+        };
+        return(void);
+    };
+
+    public var init = function(EventHandler, InfomationParser) {
+        this.EventHandler = EventHandler;
+        this.InfomationParser = InfomationParser;
+    };
+};

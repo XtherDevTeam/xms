@@ -1,0 +1,19 @@
+public const ServerMessageType = class() {
+    public const UnknownMessage             = 0-1;      // Invalid Message
+    public const NormalMessage              = 0;        // [22:01:49] [Worker-Main-4/INFO]: balabala...
+    public const ErrorMessage               = 1;        // [22:01:25] [ServerMain/ERROR]: balabala...
+    public const WarningMessage             = 2;        // [22:01:48] [ServerMain/WARN]: balabala...
+    public const ServerAddress              = 3;        // [22:01:52] [Server thread/INFO]: Starting Minecraft server on [ADDRESS]
+    public const ServerVersion              = 4;        // [22:01:52] [Server thread/INFO]: Starting minecraft server version 1.18.1
+    public const GameType                   = 5;        // [22:01:52] [Server thread/INFO]: Default game type: SURVIVAL
+    public const ServerStarted              = 6;        // [22:02:47] [Server thread/INFO]: Done (54.134s)! For help, type "help"
+    public const PlayerJoined               = 7;        // [09:13:15] [Server thread/INFO]: [playerName] joined the game
+    public const PlayerDisconnected         = 8;        // [09:13:26] [Server thread/INFO]: [playerName] left the game
+    public const PlayerSendMessage          = 9;        // [09:14:35] [Server thread/INFO]: <[playerName]> [Message]
+};
+
+public const ServerMessage = class() {
+    public var MessageType                  = 0;
+    public var MessageTime                  = "";       // hh:mm:ss
+    public var MessageParam                 = [];
+};

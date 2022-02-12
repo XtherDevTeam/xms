@@ -1,0 +1,3 @@
+const BasicInfomationParser = class() {
+    public var MainParser = function(input) {};      // return a ServerMessage object
+};

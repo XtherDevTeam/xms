@@ -1,0 +1,9 @@
+const BasicEventHandler = class() {
+	public var event_player_connected(server, playerName) {};
+	public var event_player_disconnected(server, playerName) {};
+	public var event_send_message(server, playerName, content) {};
+	public var event_server_started(server, server_addr, server_version) {};
+	public var init(server, server_object) {
+		this.server_object = server_object;
+	};
+};

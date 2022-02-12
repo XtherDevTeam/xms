@@ -1,0 +1,65 @@
+import "io/io.xs0";
+import "string.xs0";
+
+import "xms/lib/message.xs0";
+import "xms/lib/basic_info_parser.xs0";
+
+const OfficialMinecraftServerInfomationParser = class(BasicInfomationParser) {
+    // return a list like ["time", "who send this message", "level"]
+    public const ParseMessagePrefix = function(StartFlag) {
+        if (StartFlag.startswith("[") == false) {
+            return(void); // 去掉不符合常规的Message
+        };
+
+        var time = StartFlag.substr(1, "xx:xx:xx".length());
+        StartFlag = StartFlag.substr(12, StartFlag.length() - 13);
+        var next = split(StartFlag, "/");
+        if (next.size() != 2) {
+            return(void);
+        };
+        return([time, next[0], next[1]]);
+    };
+
+    public var MainParser = function(input) {
+        var Message = class(ServerMessage);
+        Message.MessageType = ServerMessageType.UnknownMessage;
+        var StartFlag = input.substr(0, input.find(": ", 0, input.length()));
+        var RealMessage = input.substr(input.find(": ", 0, input.length()) + 2, input.length());
+        var PrefixParseResult = this.ParseMessagePrefix(StartFlag);
+
+        if (PrefixParseResult == void) {
+            return(Message);
+        };
+        Message.MessageTime = PrefixParseResult[0];
+        // parse message level
+        switch (PrefixParseResult[2]) {
+            case ("INFO") {
+                Message.MessageType = ServerMessageType.NormalMessage;
+                switch (PrefixParseResult[1]) {
+                    case ("Server thread") {
+                        if (RealMessage.startswith("Starting minecraft server version ")) {
+                            Message.MessageType = ServerMessageType.ServerVersion;
+                            
+                        };
+                    }
+                    default {
+                        Message.MessageParam = [RealMessage];
+                    }
+                };
+            }
+            case ("WARN") {
+                Message.MessageType = ServerMessageType.WarningMessage;
+                Message.MessageParam = [RealMessage];
+            }
+            case ("ERROR") {
+                Message.MessageType = ServerMessage.ErrorMessage;
+                Message.MessageParam = [RealMessage];
+            }
+            default {
+                Message.MessageParam = [RealMessage];
+                return(Message);
+            }
+        };
+        return(Message);
+    };
+};
