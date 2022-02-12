@@ -37,9 +37,52 @@ const OfficialMinecraftServerInfomationParser = class(BasicInfomationParser) {
                 Message.MessageType = ServerMessageType.NormalMessage;
                 switch (PrefixParseResult[1]) {
                     case ("Server thread") {
+                        // some events, can parse by header-strings
                         if (RealMessage.startswith("Starting minecraft server version ")) {
                             Message.MessageType = ServerMessageType.ServerVersion;
-                            
+                            Message.MessageParam = [RealMessage.substr(34, RealMessage.length())];
+                        } else if (RealMessage.startswith("Default game type: ")) {
+                            Message.MessageType = ServerMessageType.GameType;
+                            Message.MessageParam = [RealMessage.substr(19, RealMessage.length())];
+                        } else if (RealMessage.startswith("Starting Minecraft server on ")) {
+                            Message.MessageType = ServerMessageType.ServerAddress;
+                            Message.MessageParam = split(RealMessage.substr(29, RealMessage.length()), ":");
+                        } else if (RealMessage.startswith("Done (")) {
+                            Message.MessageType = ServerMessageType.ServerStarted;
+                            Message.MessageParam = [];
+                        } else if (RealMessage.startswith("<")) {
+                            if (RealMessage.find(">", 1, RealMessage.length()) == 0-1) {
+                                Message.MessageType = ServerMessageType.UnknownMessage;
+                                return(Message);
+                            };
+                            var playerName = RealMessage.substr(1, RealMessage.find(">", 1, RealMessage.length()));
+                            var playerMessage = RealMessage.substr(RealMessage.find(">", 1, RealMessage.length()) + 3, RealMessage.length());
+                            Message.MessageType = ServerMessageType.PlayerSendMessage;
+                            Message.MessageParam = [playerName, playerMessage];
+                        }
+                        
+                        /* 
+                         * but some of them cannot parse by that way.
+                         * but there are some texts can identify them
+                         * we don't need to care about player's messages,
+                         * they have been processed before.
+                         */
+                        
+                        else if (RealMessage.find("joined the game", 0, RealMessage.length()) != 0-1) {
+                            Message.MessageType = ServerMessageType.PlayerJoined;
+                            Message.MessageParam = [RealMessage.substr(0, RealMessage.length() - 16)];
+                        } else if (RealMessage.find("left the game", 0, RealMessage.length()) != 0-1) {
+                            Message.MessageType = ServerMessageType.PlayerDisconnected;
+                            Message.MessageParam = [RealMessage.substr(0, RealMessage.length() - 14)];
+                        }
+                        
+                        /*
+                         * process the normal log output
+                         */
+                        
+                        else {
+                            Message.MessageType = ServerMessageType.NormalMessage;
+                            Message.MessageParam = [RealMessage];
                         };
                     }
                     default {

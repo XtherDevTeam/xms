@@ -13,6 +13,8 @@
 
 ### Todo list:
 
--   [ ] Basic Server output parser
+-   [x] Basic Server output parser
+
 -   [ ] A plugin loader based on Xscript
+
 -   [ ] Providing a interactive shell to players

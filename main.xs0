@@ -1,7 +1,11 @@
 import "io/io.xs0";
-import "subprocessing/subprocessing.xs0";
-import "xms/official_server/parser.xs0";
 
-var parser = class(OfficialMinecraftServerInfomationParser);
-var result = parser.MainParser("[08:59:21] [Server thread/INFO]: Done (24.850s)!");
-io.print(result.MessageTime, ", ", result.MessageType, ", ", result.MessageParam, "\n");
+import "xms/lib/server.xs0";
+import "xms/official_server/parser.xs0";
+import "handler.xs0";
+
+var server = class(XscriptMinecraftServer)(
+    class(EventHandler)(), 
+    class(OfficialMinecraftServerInfomationParser)(), 
+    "./mcserver", "server.jar", "-Xmx2G"
+);

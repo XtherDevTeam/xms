@@ -10,6 +10,7 @@ public const ServerMessageType = class() {
     public const PlayerJoined               = 7;        // [09:13:15] [Server thread/INFO]: [playerName] joined the game
     public const PlayerDisconnected         = 8;        // [09:13:26] [Server thread/INFO]: [playerName] left the game
     public const PlayerSendMessage          = 9;        // [09:14:35] [Server thread/INFO]: <[playerName]> [Message]
+    public const ServerStopping             = 10;       // [09:18:25] [Server thread/INFO]: Stopping server
 };
 
 public const ServerMessage = class() {

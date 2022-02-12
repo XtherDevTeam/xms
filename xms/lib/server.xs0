@@ -2,6 +2,7 @@ import "os/os.xs0";
 import "io/io.xs0";
 import "sys/sys.xs0";
 import "stdfp.xs0";
+import "subprocessing/subprocessing.xs0";
 
 const XscriptMinecraftServer = class() {
     public var ServerExecution;
@@ -13,36 +14,37 @@ const XscriptMinecraftServer = class() {
     public var GameType;
 
     public var MainLoop = function() {
-        while (stdfp.stdin.eof() == false) {
-            var line = sys.readline(ServerExecution.stdoutput[0]);
-            var infomation = InfomationParser.MainParser(line);
-            switch(infomation.MessageType)
+        while (stdfp.stdin.eof() == 0) {
+            var line = sys.readline(this.ServerExecution.stdoutput[0]);
+            var infomation = this.InfomationParser.MainParser(line);
+            switch (infomation.MessageType)
             {
                 case (ServerMessageType.NormalMessage) {
-                    io.print("[Server/INFO] [" + infomation.MessageTime + "] ", infomation.MessageParam);
+                    io.print("[Server/INFO] [" + infomation.MessageTime + "] ", infomation.MessageParam, "\n");
                 }
                 case (ServerMessageType.WarningMessage) {
-                    io.print("[Server/WARN] [" + infomation.MessageTime + "] ", infomation.MessageParam);
+                    io.print("[Server/WARN] [" + infomation.MessageTime + "] ", infomation.MessageParam, "\n");
                 }
                 case (ServerMessageType.ErrorMessage) {
-                    io.print("[Server/ERR ] [" + infomation.MessageTime + "] ", infomation.MessageParam);
+                    io.print("[Server/ERR ] [" + infomation.MessageTime + "] ", infomation.MessageParam, "\n");
+                    return(void);
                 }
                 case (ServerMessageType.ServerAddress) {
                     this.ServerAddress = infomation.MessageParam; // maybe a list that like ["*", "25565"]
-                    io.print("[Server/ADDR] [" + infomation.MessageTime + "] ", infomation.MessageParam);
+                    io.print("[Server/ADDR] [" + infomation.MessageTime + "] ", infomation.MessageParam, "\n");
                 }
                 case (ServerMessageType.ServerVersion) {
                     this.ServerVersion = infomation.MessageParam[0]; // like ["1.18.1"]
-                    io.print("[Server/VERS] [" + infomation.MessageTime + "] ", infomation.MessageParam);
+                    io.print("[Server/VERS] [" + infomation.MessageTime + "] ", infomation.MessageParam, "\n");
                 }
                 case (ServerMessageType.GameType) {
                     this.GameType = infomation.MessageParam[0]; // like ["SURVIVAL"]
-                    io.print("[Server/TYPE] [" + infomation.MessageTime + "] ", infomation.MessageParam);
+                    io.print("[Server/TYPE] [" + infomation.MessageTime + "] ", infomation.MessageParam, "\n");
 
                 }
                 case (ServerMessageType.ServerStarted) {
                     this.EventHandler.event_server_started(this, this.ServerAddress, this.ServerVersion);
-                    io.print("[Server/INFO] [" + infomation.MessageTime + "] Server Started");
+                    io.print("[Server/INFO] [" + infomation.MessageTime + "] Server Started", "\n");
                 }
                 case (ServerMessageType.PlayerJoined) {
                     // infomation.MessageParam[0] -> playerName
@@ -57,13 +59,39 @@ const XscriptMinecraftServer = class() {
                     // infomation.MessageParam[1] -> Message
                     this.EventHandler.event_send_message(this, infomation.MessageParam[0], infomation.MessageParam[1]);
                 }
+                case (ServerMessageType.ServerStopping) {
+                    io.print("[Server/INFO] Stopping...\n");
+                    this.EventHandler.event_server_stopping(this);
+                }
+                default {
+                    io.print("Unknown message: ", infomation.MessageParam[0], "\n");
+                }
             };
         };
         return(void);
     };
 
-    public var init = function(EventHandler, InfomationParser) {
+    public var init = function(EventHandler, InfomationParser, MCServerDirPath, ServerJarName, PrefixArguments) {
         this.EventHandler = EventHandler;
         this.InfomationParser = InfomationParser;
+        if (system_name.startswith("Windows")) {
+            io.print("Running on Win32 platform, using powershell.exe for default shell...");
+            this.ServerExecution = subprocessing.execute("powershell.exe", subprocessing.exec_pipes);
+            this.ServerExecution.communicate("cd \"" + MCServerDirPath + "\";pwd\n");
+            var ExecuteCmdLine = "java.exe " + PrefixArguments + " -jar " + ServerJarName;
+            io.print("Executing cmdline: ", ExecuteCmdLine, "\n");
+            sys.write(this.ServerExecution.stdinput[1], ExecuteCmdLine + "\n", ExecuteCmdLine.length());
+            io.print("Started server process.Jumping main loop...\n");
+        } else {
+            io.print("Running on unix-like platform, using /bin/sh for default shell...\n");
+            this.ServerExecution = subprocessing.execute("/bin/bash", subprocessing.exec_pipes);
+            this.ServerExecution.communicate("cd \"" + MCServerDirPath + "\";pwd\n", false);
+            var ExecuteCmdLine = "java " + PrefixArguments + " -jar " + ServerJarName;
+            io.print("Executing cmdline: ", ExecuteCmdLine, "\n");
+            io.print(this.ServerExecution.communicate(ExecuteCmdLine + "\n", true), "\n");
+            io.print("Started server process.Jumping main loop...\n");
+        };
+        this.MainLoop();
+        return(void);
     };
 };

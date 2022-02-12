@@ -1,0 +1,12 @@
+import "xms/lib/basic_handler.xs0";
+
+import "io/io.xs0";
+
+const EventHandler = class(BasicEventHandler) {
+    public var event_player_connected = function(server, playerName) {
+        io.print(playerName + " joined!\n");
+    };
+    public var event_player_disconnected = function(server, playerName) {
+        io.print(playerName + " left!\n");
+    };
+};
