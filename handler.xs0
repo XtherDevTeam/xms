@@ -13,6 +13,10 @@ var plugin_list = [
 
 var loaded_plugins = [];
 var registered_commands = {};
+var registered_events = {
+    "player.connected" : [],
+    "player.disconnected" : []
+};
 
 const PluginLoader = function() {
     for_each(i : plugin_list) {
@@ -20,6 +24,10 @@ const PluginLoader = function() {
         for_each(j : loaded_plugins[loaded_plugins.size()-1].registered_commands) {
             var name = j; // unrefernce j
             registered_commands.insert(name, ref(loaded_plugins[loaded_plugins.size()-1]));
+        };
+        for_each(j : loaded_plugins[loaded_plugins.size()-1].registered_events) {
+            var name = j; // unrefernce j
+            registered_events[name].push_back(ref(loaded_plugins[loaded_plugins.size()-1]));
         };
     };
     io.print("[PluginLoader/INFO] Loaded ", plugin_list.size(), " plugin(s) to server!\n");
@@ -32,11 +40,9 @@ const EventHandler = class(BasicEventHandler) {
         PluginLoader();
     };
     public var event_player_connected = function(server, playerName) {
-        var text = [
-            ["ようこそ、XscriptMSの世界へ!\\n", "yellow"],
-            ["Hello, world!", "white"]
-        ];
-        this.CmdExecutor.CommandExecute("/tellraw", [playerName, MakeTellrawText(text)]);
+        for_each (i : registered_events["player.connected"]) {
+            i.event_player_connected(server, playerName);
+        };
         io.print(playerName + " joined!\n");
     };
     public var event_send_message = function(server, playerName, message) {
@@ -52,10 +58,14 @@ const EventHandler = class(BasicEventHandler) {
                 ];
                 this.CmdExecutor.CommandExecute("/tellraw", [playerName, MakeTellrawText(text)]);
             };
+        } else {
+            io.print(playerName, ": ", message, "\n");
         };
-        io.print(playerName, ": ", message, "\n");
     };
     public var event_player_disconnected = function(server, playerName) {
+        for_each (i : registered_events["player.disconnected"]) {
+            i.event_player_disconnected(server, playerName);
+        };
         io.print(playerName + " left!\n");
     };
 };

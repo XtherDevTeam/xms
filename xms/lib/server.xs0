@@ -83,7 +83,7 @@ const XscriptMinecraftServer = class() {
             io.print("Started server process.Jumping main loop...\n");
         } else {
             io.print("Running on unix-like platform, using /bin/sh for default shell...\n");
-            this.ServerExecution = subprocessing.execute("/bin/bash", subprocessing.exec_pipes);
+            this.ServerExecution = subprocessing.execute("/bin/sh", subprocessing.exec_pipes);
             this.ServerExecution.communicate("cd \"" + MCServerDirPath + "\";pwd\n", true);
             var ExecuteCmdLine = "java " + PrefixArguments + " -jar " + ServerJarName;
             io.print("Executing cmdline: ", ExecuteCmdLine, "\n");

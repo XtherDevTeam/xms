@@ -9,8 +9,9 @@ public const ServerMessageType = class() {
     public const ServerStarted              = 6;        // [22:02:47] [Server thread/INFO]: Done (54.134s)! For help, type "help"
     public const PlayerJoined               = 7;        // [09:13:15] [Server thread/INFO]: [playerName] joined the game
     public const PlayerDisconnected         = 8;        // [09:13:26] [Server thread/INFO]: [playerName] left the game
-    public const PlayerSendMessage          = 9;        // [09:14:35] [Server thread/INFO]: <[playerName]> [Message]
-    public const ServerStopping             = 10;       // [09:18:25] [Server thread/INFO]: Stopping server
+    public const PlayerDead                 = 9;        // I don't know how to add it
+    public const PlayerSendMessage          = 10;       // [09:14:35] [Server thread/INFO]: <[playerName]> [Message]
+    public const ServerStopping             = 11;       // [09:18:25] [Server thread/INFO]: Stopping server
 };
 
 public const ServerMessage = class() {
