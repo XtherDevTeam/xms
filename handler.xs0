@@ -1,10 +1,59 @@
+import "io/io.xs0";
+import "sys/sys.xs0";
+import "data/data.xs0";
+
+import "xms/official_server/cmd_executor.xs0";
+import "xms/official_server/apis.xs0";
+
 import "xms/lib/basic_handler.xs0";
 
-import "io/io.xs0";
+var plugin_list = [
+    "plugins/hello.pl"
+];
+
+var loaded_plugins = [];
+var registered_commands = {};
+
+const PluginLoader = function() {
+    for_each(i : plugin_list) {
+        loaded_plugins.push_back(data.load(i));
+        for_each(j : loaded_plugins[loaded_plugins.size()-1].registered_commands) {
+            var name = j; // unrefernce j
+            registered_commands.insert(name, ref(loaded_plugins[loaded_plugins.size()-1]));
+        };
+    };
+    io.print("[PluginLoader/INFO] Loaded ", plugin_list.size(), " plugin(s) to server!\n");
+};
 
 const EventHandler = class(BasicEventHandler) {
+    public var CmdExecutor;
+    public var event_server_started = function(server) {
+        this.CmdExecutor = class(OfficialMinecraftServerCommandExecutor)(server.ServerExecution);
+        PluginLoader();
+    };
     public var event_player_connected = function(server, playerName) {
+        var text = [
+            ["ようこそ、XscriptMSの世界へ!\\n", "yellow"],
+            ["Hello, world!", "white"]
+        ];
+        this.CmdExecutor.CommandExecute("/tellraw", [playerName, MakeTellrawText(text)]);
         io.print(playerName + " joined!\n");
+    };
+    public var event_send_message = function(server, playerName, message) {
+        // handle command event.
+        if (message.startswith(".")) {
+            message = message.substr(1, message.length());
+            var arglist = sys.cmdline2arglist(message);
+            if (registered_commands.exist(arglist[0])) {
+                registered_commands[arglist[0]].command_handler(server, playerName, arglist[0], arglist);
+            } else {
+                var text = [
+                    ["No such command: " + arglist[0], "red"]
+                ];
+                this.CmdExecutor.CommandExecute("/tellraw", [playerName, MakeTellrawText(text)]);
+            };
+        };
+        io.print(playerName, ": ", message, "\n");
     };
     public var event_player_disconnected = function(server, playerName) {
         io.print(playerName + " left!\n");

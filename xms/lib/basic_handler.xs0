@@ -2,7 +2,7 @@ const BasicEventHandler = class() {
 	public var event_player_connected = function(server, playerName) {};
 	public var event_player_disconnected = function(server, playerName) {};
 	public var event_send_message = function(server, playerName, content) {};
-	public var event_server_started = function(server, server_addr, server_version) {};
+	public var event_server_started = function(server) {};
 	public var event_server_stopping = function(server) {};
 	public var init = function() {};
 };

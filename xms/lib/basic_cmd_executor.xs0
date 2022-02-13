@@ -1,0 +1,11 @@
+import "subprocessing/subprocessing.xs0";
+import "io/io.xs0";
+
+const BasicCommandExecutor = class() {
+    public var ServerExecution;
+    public var CommandExecute = function(cmd, args) {};
+    public var GetOnlinePlayers = function() {};
+    public var init = function(ServerExecution) {
+        this.ServerExecution = ServerExecution;
+    };
+};

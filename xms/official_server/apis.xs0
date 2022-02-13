@@ -1,0 +1,15 @@
+// like [["text", "color"], ["text", "color"], ...]
+// if color is empty, it won't append "color" into final json data
+const MakeTellrawText = function(pairs) {
+    var finalText = "[";
+    for_each(pair : pairs) {
+        var text = "{\"text\": \"" + pair[0] + "\"";
+        if (pair[1] != "") {
+            text += ", \"color\": \"" + pair[1] + "\"";
+        };
+        text += "},";
+        finalText += text;
+    };
+    finalText = finalText.substr(0, finalText.length()-1) + "]";
+    return(finalText);
+};

@@ -1,0 +1,40 @@
+import "string.xs0";
+
+import "xms/lib/basic_cmd_executor.xs0";
+
+const OfficialMinecraftServerCommandExecutor = class(BasicCommandExecutor) {
+    public var CommandExecute = function(cmd, args) {
+        if (cmd.startswith("/")) {
+            cmd = cmd.substr(1, cmd.length());
+        };
+        var command = cmd + " ";
+        for_each(arg : args) {
+            if (arg.at(0) == '{' && arg.at(arg.size()-1) == '}') {
+
+            }
+            else if (arg.at(0) == '[' && arg.at(arg.size()-1) == ']') {
+                
+            }
+            else if (arg.find('"', 0, arg.size()) != 0-1) {
+                arg.replace("\"", "\\" + "\"");
+            }
+            else if (arg.find(" ", 0, arg.size()) != 0-1) {
+                arg = '"' + arg + '"';
+            };
+            command += arg + " ";
+        };
+        io.print(command, "\n");
+        var waitForOutput = true;
+        if (cmd == "tellraw") {
+            waitForOutput = false;
+        };
+        return(this.ServerExecution.communicate(command + "\n", waitForOutput)[0]);
+    };
+
+    public var GetOnlinePlayers = function() {
+        var result = this.CommandExecute("list", []);
+        result.substr(result.find(": ", "[19:32:05] [Server thread/INFO]: ".length(), result.length()) + 2, result.length());
+        result = split(result, ", ");
+        return(result);
+    };
+};

@@ -15,6 +15,6 @@
 
 -   [x] Basic Server output parser
 
--   [ ] A plugin loader based on Xscript
+-   [x] A plugin loader based on Xscript
 
--   [ ] Providing a interactive shell to players
+-   [x] Providing a interactive shell to players

@@ -1,0 +1,27 @@
+/* Because some reasons of plugins loader, 
+   We can't import anything into plugin source file
+   But, original handler provided some useful library to plugins
+ */
+
+import "data/data.xs0";
+
+const hello_plugin = class() {
+    public var registered_commands = ["hello"];
+    public var command_handler = function(server, playerName, command, arglist) {
+        var CmdExecutor = class(OfficialMinecraftServerCommandExecutor)(server.ServerExecution);
+        switch (command) {
+            case ("hello") {
+                var text = [
+                    ["Hello!", "yellow"]
+                ];
+                CmdExecutor.CommandExecute("/tellraw", [playerName, MakeTellrawText(text)]);
+            }
+            default {
+
+            }
+        };
+        return(void);
+    };
+};
+
+data.save(hello_plugin, "hello.pl");

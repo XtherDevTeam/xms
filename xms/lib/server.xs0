@@ -8,6 +8,7 @@ const XscriptMinecraftServer = class() {
     public var ServerExecution;
     public var EventHandler;
     public var InfomationParser;
+    public var CommandExecutor;
 
     public var ServerAddress;
     public var ServerVersion;
@@ -43,7 +44,7 @@ const XscriptMinecraftServer = class() {
 
                 }
                 case (ServerMessageType.ServerStarted) {
-                    this.EventHandler.event_server_started(this, this.ServerAddress, this.ServerVersion);
+                    this.EventHandler.event_server_started(this);
                     io.print("[Server/INFO] [" + infomation.MessageTime + "] Server Started", "\n");
                 }
                 case (ServerMessageType.PlayerJoined) {
@@ -72,8 +73,6 @@ const XscriptMinecraftServer = class() {
     };
 
     public var init = function(EventHandler, InfomationParser, MCServerDirPath, ServerJarName, PrefixArguments) {
-        this.EventHandler = EventHandler;
-        this.InfomationParser = InfomationParser;
         if (system_name.startswith("Windows")) {
             io.print("Running on Win32 platform, using powershell.exe for default shell...");
             this.ServerExecution = subprocessing.execute("powershell.exe", subprocessing.exec_pipes);
@@ -85,12 +84,16 @@ const XscriptMinecraftServer = class() {
         } else {
             io.print("Running on unix-like platform, using /bin/sh for default shell...\n");
             this.ServerExecution = subprocessing.execute("/bin/bash", subprocessing.exec_pipes);
-            this.ServerExecution.communicate("cd \"" + MCServerDirPath + "\";pwd\n", false);
+            this.ServerExecution.communicate("cd \"" + MCServerDirPath + "\";pwd\n", true);
             var ExecuteCmdLine = "java " + PrefixArguments + " -jar " + ServerJarName;
             io.print("Executing cmdline: ", ExecuteCmdLine, "\n");
             io.print(this.ServerExecution.communicate(ExecuteCmdLine + "\n", true), "\n");
             io.print("Started server process.Jumping main loop...\n");
         };
+        // Initialize data-structures
+        this.EventHandler = EventHandler;
+        this.InfomationParser = InfomationParser;
+
         this.MainLoop();
         return(void);
     };
