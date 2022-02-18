@@ -15,7 +15,7 @@ const hello_plugin = class() {
                 var text = [
                     ["Hello!", "yellow"]
                 ];
-                CmdExecutor.CommandExecute("/tellraw", [playerName, MakeTellrawText(text)]);
+                CmdExecutor.CommandExecute("tellraw", [playerName, MakeTellrawText(text)]);
             }
             default {
 
@@ -23,12 +23,13 @@ const hello_plugin = class() {
         };
         return(void);
     };
+    public var event_server_started = function(server){};
     public var event_player_connected = function(server, playerName) {
         var CmdExecutor = class(OfficialMinecraftServerCommandExecutor)(server.ServerExecution);
         var text = [
-            ["Hello from event.player.connected!", "yellow"]
+            ["Hello, " + playerName + "! Welcome!", "yellow"]
         ];
-        CmdExecutor.CommandExecute("/tellraw", [playerName, MakeTellrawText(text)]);
+        CmdExecutor.CommandExecute("tellraw", [playerName, MakeTellrawText(text)]);
     };
     public var event_player_disconnected = function(server, playerName) {};
 };

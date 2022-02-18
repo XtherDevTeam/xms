@@ -8,14 +8,24 @@ const XscriptMinecraftServer = class() {
     public var ServerExecution;
     public var EventHandler;
     public var InfomationParser;
-    public var CommandExecutor;
 
     public var ServerAddress;
     public var ServerVersion;
     public var GameType;
 
-    public var MainLoop = function() {
+    public var InputProcessor = function() {
+        io.print("[InputProcessor/INFO] Started processing user input\n");
         while (stdfp.stdin.eof() == 0) {
+            var str = io.input();
+            this.ServerExecution.communicate(str + "\n", false);
+        };
+        this.ServerExecution.communicate("stop\r\n", false);
+        io.print("[InputProcessor/INFO] Exiting...\n");
+        return(void);
+    };
+
+    public var MainLoop = function() {
+        while (true) {
             var line = sys.readline(this.ServerExecution.stdoutput[0]);
             var infomation = this.InfomationParser.MainParser(line);
             switch (infomation.MessageType)
@@ -44,6 +54,7 @@ const XscriptMinecraftServer = class() {
 
                 }
                 case (ServerMessageType.ServerStarted) {
+                    thread(this.InputProcessor());     // it will spawn a new thread.
                     this.EventHandler.event_server_started(this);
                     io.print("[Server/INFO] [" + infomation.MessageTime + "] Server Started", "\n");
                 }
@@ -63,6 +74,7 @@ const XscriptMinecraftServer = class() {
                 case (ServerMessageType.ServerStopping) {
                     io.print("[Server/INFO] Stopping...\n");
                     this.EventHandler.event_server_stopping(this);
+                    sys.exit(0);
                 }
                 default {
                     io.print("Unknown message: ", infomation.MessageParam[0], "\n");
@@ -76,19 +88,19 @@ const XscriptMinecraftServer = class() {
         if (system_name.startswith("Windows")) {
             io.print("Running on Win32 platform, using powershell.exe for default shell...");
             this.ServerExecution = subprocessing.execute("powershell.exe", subprocessing.exec_pipes);
-            this.ServerExecution.communicate("cd \"" + MCServerDirPath + "\";pwd\n");
+            this.ServerExecution.communicate("cd \"" + MCServerDirPath + "\";pwd\n", true);
             var ExecuteCmdLine = "java.exe " + PrefixArguments + " -jar " + ServerJarName;
             io.print("Executing cmdline: ", ExecuteCmdLine, "\n");
             sys.write(this.ServerExecution.stdinput[1], ExecuteCmdLine + "\n", ExecuteCmdLine.length());
-            io.print("Started server process.Jumping main loop...\n");
+            io.print("Started server process.Jumping to main loop...\n");
         } else {
             io.print("Running on unix-like platform, using /bin/sh for default shell...\n");
             this.ServerExecution = subprocessing.execute("/bin/sh", subprocessing.exec_pipes);
             this.ServerExecution.communicate("cd \"" + MCServerDirPath + "\";pwd\n", true);
-            var ExecuteCmdLine = "java " + PrefixArguments + " -jar " + ServerJarName;
+            var ExecuteCmdLine = "java " + PrefixArguments + " -jar " + ServerJarName + "; exit;\n";
             io.print("Executing cmdline: ", ExecuteCmdLine, "\n");
-            io.print(this.ServerExecution.communicate(ExecuteCmdLine + "\n", true), "\n");
-            io.print("Started server process.Jumping main loop...\n");
+            io.print(this.ServerExecution.communicate(ExecuteCmdLine, true), "\n");
+            io.print("Started server process.Jumping to main loop...\n");
         };
         // Initialize data-structures
         this.EventHandler = EventHandler;

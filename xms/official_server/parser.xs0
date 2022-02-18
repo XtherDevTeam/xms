@@ -28,6 +28,8 @@ const OfficialMinecraftServerInfomationParser = class(BasicInfomationParser) {
         var PrefixParseResult = this.ParseMessagePrefix(StartFlag);
 
         if (PrefixParseResult == void) {
+            Message.MessageType = ServerMessageType.UnknownMessage;
+            Message.MessageParam = [input];
             return(Message);
         };
         Message.MessageTime = PrefixParseResult[0];
@@ -47,6 +49,9 @@ const OfficialMinecraftServerInfomationParser = class(BasicInfomationParser) {
                         } else if (RealMessage.startswith("Starting Minecraft server on ")) {
                             Message.MessageType = ServerMessageType.ServerAddress;
                             Message.MessageParam = split(RealMessage.substr(29, RealMessage.length()), ":");
+                        } else if (RealMessage.startswith("Stopping server")) {
+                            Message.MessageType = ServerMessageType.ServerStopping;
+                            Message.MessageParam = [];
                         } else if (RealMessage.startswith("Done (")) {
                             Message.MessageType = ServerMessageType.ServerStarted;
                             Message.MessageParam = [];
